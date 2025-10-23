@@ -1,12 +1,31 @@
 {
-  "version": "1",
-  "name": "Base Motor Race",
-  "subtitle": "Racing Game on Base - Mint NFTs!",
-  "description": "A thrilling motorcycle racing game on Base blockchain. Dodge barriers, set high scores, and mint your achievements as NFTs!",
-  "iconUrl": "https://base-motor-race.vercel.app/icon.png",
-  "splashImageUrl": "https://base-motor-race.vercel.app/splash.png",
-  "splashBackgroundColor": "#0a0015",
-  "homeUrl": "https://base-motor-race.vercel.app",
-  "primaryCategory": "games",
-  "tags": ["game", "racing", "arcade", "base", "nft"]
+  "accountAssociation": {
+    "header": "",
+    "payload": "",
+    "signature": ""
+  },
+  "frame": {
+    "version": "1",
+    "name": "Base Motor Race",
+    "iconUrl": "https://base-motor-race.vercel.app/icon.svg",
+    "splashImageUrl": "https://base-motor-race.vercel.app/splash.svg",
+    "splashBackgroundColor": "#0a0015",
+    "homeUrl": "https://base-motor-race.vercel.app"
+  },
+  "miniapp": {
+    "version": "1",
+    "name": "Base Motor Race",
+    "subtitle": "Racing Game on Base - Mint NFTs!",
+    "description": "A thrilling motorcycle racing game on Base blockchain. Dodge barriers, set high scores, and mint your achievements as NFTs!",
+    "iconUrl": "https://base-motor-race.vercel.app/icon.svg",
+    "screenshotUrls": [
+      "https://base-motor-race.vercel.app/splash.svg"
+    ],
+    "heroImageUrl": "https://base-motor-race.vercel.app/splash.svg",
+    "splashImageUrl": "https://base-motor-race.vercel.app/splash.svg",
+    "splashBackgroundColor": "#0a0015",
+    "homeUrl": "https://base-motor-race.vercel.app",
+    "primaryCategory": "games",
+    "tags": ["game", "racing", "arcade", "base", "nft"]
+  }
 }
