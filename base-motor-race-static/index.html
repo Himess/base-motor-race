@@ -1,0 +1,2062 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Base Motor Race 🏍️</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(180deg, #1a0033 0%, #000033 100%);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #gameContainer {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            height: 100vh;
+            background: linear-gradient(180deg, #0a0015 0%, #001a33 100%);
+            overflow: hidden;
+            box-shadow: 0 0 50px rgba(0, 150, 255, 0.3);
+        }
+
+        #gameCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        #ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        #stats {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-around;
+            padding: 0 20px;
+            color: white;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(0, 150, 255, 0.8);
+        }
+
+        .stat {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 2px solid #00ffff;
+            font-size: 18px;
+        }
+
+        #hearts {
+            display: flex;
+            gap: 5px;
+        }
+
+        .heart {
+            font-size: 24px;
+            filter: drop-shadow(0 0 5px #ff0066);
+        }
+
+        #controls {
+            position: absolute;
+            bottom: 50px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-around;
+            padding: 0 20px;
+            pointer-events: auto;
+        }
+
+        .control-btn {
+            width: 80px;
+            height: 80px;
+            background: rgba(0, 255, 255, 0.2);
+            border: 3px solid #00ffff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            color: #00ffff;
+            cursor: pointer;
+            transition: all 0.1s;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .control-btn:active {
+            transform: scale(0.9);
+            background: rgba(0, 255, 255, 0.4);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.8);
+        }
+
+        #startScreen, #gameOverScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 20;
+            pointer-events: auto;
+        }
+
+        #startScreen h1, #gameOverScreen h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #00ffff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+
+        #startScreen p, #gameOverScreen p {
+            font-size: 18px;
+            margin-bottom: 30px;
+            text-align: center;
+            padding: 0 20px;
+            line-height: 1.6;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            font-size: 24px;
+            background: linear-gradient(45deg, #00ffff, #0099ff);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.6);
+            transition: all 0.3s;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 40px rgba(0, 255, 255, 0.8);
+        }
+
+        #finalScore {
+            font-size: 36px;
+            margin: 20px 0;
+            color: #00ffff;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Road lines animation */
+        @keyframes roadLine {
+            from { transform: translateY(-100px); }
+            to { transform: translateY(100vh); }
+        }
+
+        /* ==================== ANA MENÜ CSS ==================== */
+        #mainMenu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #0a0015 0%, #001a33 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            padding: 20px;
+        }
+
+        #mainMenu h1 {
+            font-size: 56px;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #00ffff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { filter: drop-shadow(0 0 20px rgba(0, 255, 255, 0.5)); }
+            50% { filter: drop-shadow(0 0 40px rgba(0, 255, 255, 0.8)); }
+        }
+
+        #mainMenu .subtitle {
+            font-size: 18px;
+            color: #00ffff;
+            margin-bottom: 50px;
+            text-align: center;
+        }
+
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .menu-btn {
+            padding: 18px 40px;
+            font-size: 22px;
+            background: linear-gradient(45deg, #00ffff, #0099ff);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.4);
+            transition: all 0.3s;
+        }
+
+        .menu-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 40px rgba(0, 255, 255, 0.6);
+        }
+
+        .menu-btn:active {
+            transform: scale(0.95);
+        }
+
+        .menu-btn.secondary {
+            background: linear-gradient(45deg, #6600ff, #9900ff);
+            box-shadow: 0 0 30px rgba(153, 0, 255, 0.4);
+        }
+
+        /* Ayarlar Menüsü */
+        #settingsMenu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 101;
+            padding: 40px 20px;
+        }
+
+        #settingsMenu.active {
+            display: flex;
+        }
+
+        #settingsMenu h2 {
+            font-size: 42px;
+            color: #00ffff;
+            margin-bottom: 40px;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+
+        .setting-item {
+            width: 100%;
+            max-width: 350px;
+            margin-bottom: 30px;
+            background: rgba(0, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #00ffff;
+        }
+
+        .setting-item label {
+            display: block;
+            color: white;
+            font-size: 18px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .setting-item .value-display {
+            color: #00ffff;
+            font-size: 24px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: linear-gradient(to right, #0099ff 0%, #00ffff 100%);
+            outline: none;
+            margin-bottom: 10px;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #00ffff;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.8);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #00ffff;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.8);
+            border: none;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 70px;
+            height: 34px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #555;
+            transition: 0.4s;
+            border-radius: 34px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background: linear-gradient(45deg, #00ffff, #0099ff);
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(36px);
+        }
+
+        .toggle-label {
+            text-align: center;
+            margin-top: 10px;
+            color: #00ffff;
+            font-size: 14px;
+        }
+
+        .back-btn {
+            margin-top: 30px;
+            padding: 15px 50px;
+            font-size: 20px;
+            background: linear-gradient(45deg, #ff0066, #ff6600);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 0 30px rgba(255, 0, 102, 0.4);
+        }
+
+        .back-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* NFT Info Menüsü */
+        #nftInfoMenu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            z-index: 101;
+            padding: 40px 20px;
+            overflow-y: auto;
+        }
+
+        #nftInfoMenu.active {
+            display: flex;
+        }
+
+        #nftInfoMenu h2 {
+            font-size: 42px;
+            color: #00ffff;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+
+        #nftInfoMenu h3 {
+            font-size: 22px;
+            color: #00ffff;
+            margin-bottom: 15px;
+        }
+
+        .info-section {
+            width: 100%;
+            max-width: 350px;
+            margin-bottom: 25px;
+            background: rgba(0, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #00ffff;
+        }
+
+        .info-section p {
+            color: white;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .info-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0 0 0;
+        }
+
+        .info-section ul li {
+            color: white;
+            font-size: 14px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+        }
+
+        .info-section ul li:last-child {
+            border-bottom: none;
+        }
+
+        .rarity-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            margin: 10px 0;
+            background: rgba(0, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+        }
+
+        .rarity-icon {
+            font-size: 32px;
+            margin-right: 15px;
+            width: 40px;
+            text-align: center;
+        }
+
+        .rarity-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .rarity-details strong {
+            color: #00ffff;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .rarity-details span {
+            color: white;
+            font-size: 14px;
+        }
+
+        .rarity-icon.common { filter: grayscale(0.3); }
+        .rarity-icon.rare { filter: hue-rotate(90deg); }
+        .rarity-icon.epic { filter: hue-rotate(270deg); }
+        .rarity-icon.legendary { filter: brightness(1.5); }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        
+        <div id="ui">
+            <div id="stats">
+                <div class="stat">
+                    <span id="score">0</span> m
+                </div>
+                <div class="stat" id="hearts">
+                    <span class="heart">❤️</span>
+                    <span class="heart">❤️</span>
+                    <span class="heart">❤️</span>
+                </div>
+                <div class="stat">
+                    <span id="speed">0</span> km/h
+                </div>
+            </div>
+
+            <div id="controls">
+                <div class="control-btn" id="leftBtn">◄</div>
+                <div class="control-btn" id="rightBtn">►</div>
+            </div>
+        </div>
+
+        <!-- ==================== ANA MENÜ ==================== -->
+        <div id="mainMenu">
+            <h1>🏍️ BASE MOTOR RACE</h1>
+            <p class="subtitle">Dodge barriers. Set records. Mint NFTs.</p>
+            
+            <div class="menu-buttons">
+                <button class="menu-btn" id="playBtn">
+                    🎮 PLAY GAME
+                </button>
+                <button class="menu-btn secondary" id="nftInfoBtn">
+                    💎 NFT INFO
+                </button>
+                <button class="menu-btn secondary" id="settingsBtn">
+                    ⚙️ SETTINGS
+                </button>
+            </div>
+        </div>
+
+        <!-- ==================== NFT INFO MENÜSÜ ==================== -->
+        <div id="nftInfoMenu">
+            <h2>💎 NFT INFO</h2>
+            
+            <div class="info-section">
+                <h3>🎨 Free NFT Minting!</h3>
+                <p>Mint your race score as an NFT on Base - completely FREE! Only pay gas (~$0.20)</p>
+            </div>
+            
+            <div class="info-section">
+                <h3>🏆 Rarity Tiers</h3>
+                <div class="rarity-item">
+                    <span class="rarity-icon common">🏍️</span>
+                    <div class="rarity-details">
+                        <strong>Common</strong>
+                        <span>5,000 - 7,499m</span>
+                    </div>
+                </div>
+                <div class="rarity-item">
+                    <span class="rarity-icon rare">💎</span>
+                    <div class="rarity-details">
+                        <strong>Rare</strong>
+                        <span>7,500 - 9,999m</span>
+                    </div>
+                </div>
+                <div class="rarity-item">
+                    <span class="rarity-icon epic">💜</span>
+                    <div class="rarity-details">
+                        <strong>Epic</strong>
+                        <span>10,000 - 19,999m</span>
+                    </div>
+                </div>
+                <div class="rarity-item">
+                    <span class="rarity-icon legendary">👑</span>
+                    <div class="rarity-details">
+                        <strong>Legendary</strong>
+                        <span>20,000m+</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-section">
+                <h3>🎁 Weekly Rewards</h3>
+                <p>Top 3 players each week receive special NFTs:</p>
+                <ul>
+                    <li>🥇 1st Place - Champion NFT</li>
+                    <li>🥈 2nd Place - Runner-up NFT</li>
+                    <li>🥉 3rd Place - Top 3 NFT</li>
+                </ul>
+            </div>
+            
+            <button class="back-btn" id="backToMenuFromInfoBtn">← BACK TO MENU</button>
+        </div>
+
+        <!-- ==================== AYARLAR MENÜSÜ ==================== -->
+        <div id="settingsMenu">
+            <h2>⚙️ SETTINGS</h2>
+            
+            <div class="setting-item">
+                <label>🔊 Music Volume</label>
+                <div class="value-display" id="musicVolumeValue">70%</div>
+                <input type="range" min="0" max="100" value="70" class="slider" id="musicVolumeSlider">
+            </div>
+            
+            <div class="setting-item">
+                <label>🔉 Sound Effects</label>
+                <div class="value-display" id="sfxVolumeValue">100%</div>
+                <input type="range" min="0" max="100" value="100" class="slider" id="sfxVolumeSlider">
+            </div>
+            
+            <div class="setting-item">
+                <label>🎵 Music</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="musicToggle" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+                <div class="toggle-label" id="musicStatus">ON</div>
+            </div>
+            
+            <div class="setting-item">
+                <label>🎮 Vibration</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="vibrationToggle" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+                <div class="toggle-label" id="vibrationStatus">ON</div>
+            </div>
+            
+            <button class="back-btn" id="backToMenuBtn">← BACK TO MENU</button>
+        </div>
+
+        <div id="startScreen" class="hidden">
+            <h1>🏍️ BASE MOTOR RACE</h1>
+            <p>
+                Avoid the barriers!<br>
+                Use Left ◄ and Right ► buttons to control<br>
+                How far can you go with 3 lives?
+            </p>
+            <button class="btn" id="startBtn">START GAME</button>
+        </div>
+
+        <div id="gameOverScreen" class="hidden">
+            <h1>GAME OVER!</h1>
+            <div id="finalScore">0 m</div>
+            <p>Great race! 🏁</p>
+            <button class="btn" id="mintNftBtn" style="margin-bottom: 15px;">🎨 MINT AS NFT</button>
+            <button class="btn" id="restartBtn" style="margin-bottom: 15px;">PLAY AGAIN</button>
+            <button class="btn secondary" id="backToMenuFromGameBtn" style="background: linear-gradient(45deg, #6600ff, #9900ff);">← BACK TO MENU</button>
+            <div id="nftStatus" style="margin-top: 20px; font-size: 14px; color: #00ffff;"></div>
+        </div>
+    </div>
+
+    <!-- Ethers.js -->
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const startScreen = document.getElementById('startScreen');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const startBtn = document.getElementById('startBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const mintNftBtn = document.getElementById('mintNftBtn');
+        const leftBtn = document.getElementById('leftBtn');
+        const rightBtn = document.getElementById('rightBtn');
+        const scoreEl = document.getElementById('score');
+        const speedEl = document.getElementById('speed');
+        const heartsEl = document.getElementById('hearts');
+        const finalScoreEl = document.getElementById('finalScore');
+        const nftStatusEl = document.getElementById('nftStatus');
+
+        // ====================================
+        // NFT CONFIGURATION - BASE MAINNET
+        // ====================================
+        const BASE_CHAIN_ID = 8453;
+        const BASE_RPC_URL = 'https://mainnet.base.org';
+        const BASE_EXPLORER_URL = 'https://basescan.org';
+        
+        // ✅ DEPLOYED CONTRACT ADDRESS
+        const NFT_CONTRACT_ADDRESS = '0x3ffe2224d18219e2bd35f604a144b51e30db2bb8';
+        
+        const NFT_ABI = [
+            "function mint(uint256 score, string memory tokenURI) public returns (uint256)",
+            "function getRarity(uint256 score) public pure returns (string memory)",
+            "function canMint(uint256 score) public pure returns (bool)",
+            "function playerHighScore(address player) public view returns (uint256)",
+            "function getPlayerTokens(address player) public view returns (uint256[])",
+            "function totalSupply() public view returns (uint256)"
+        ];
+
+        let provider = null;
+        let signer = null;
+        let userAddress = null;
+        let finalScoreValue = 0;
+
+        // Rarity Configuration
+        const RARITY_CONFIG = {
+            COMMON: { min: 5000, max: 7499, name: 'Common', icon: '🏍️', color: '#808080' },
+            RARE: { min: 7500, max: 9999, name: 'Rare', icon: '💎', color: '#14F195' },
+            EPIC: { min: 10000, max: 19999, name: 'Epic', icon: '💜', color: '#9945FF' },
+            LEGENDARY: { min: 20000, max: Infinity, name: 'Legendary', icon: '👑', color: '#FFD700' }
+        };
+
+        function getScoreRarity(score) {
+            if (score < 5000) return null;
+            for (const [key, config] of Object.entries(RARITY_CONFIG)) {
+                if (score >= config.min && score <= config.max) {
+                    return config;
+                }
+            }
+            return null;
+        }
+
+        // ====================================
+        // NFT MINT FUNCTION
+        // ====================================
+        async function mintScoreNFT() {
+            try {
+                const score = finalScoreValue;
+                const rarity = getScoreRarity(score);
+                
+                if (!rarity) {
+                    nftStatusEl.textContent = '❌ Score too low! Minimum: 5,000m';
+                    nftStatusEl.style.color = '#ff0000';
+                    return;
+                }
+                
+                nftStatusEl.textContent = '⏳ Connecting wallet...';
+                nftStatusEl.style.color = '#00ffff';
+                
+                if (typeof window.ethereum === 'undefined') {
+                    nftStatusEl.innerHTML = '❌ Install <a href="https://metamask.io" target="_blank" style="color: #00ffff;">MetaMask</a>!';
+                    return;
+                }
+
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                
+                const accounts = await window.ethereum.request({ 
+                    method: 'eth_requestAccounts' 
+                });
+                userAddress = accounts[0];
+                signer = provider.getSigner();
+
+                // Switch to Base Mainnet
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: '0x2105' }],
+                    });
+                } catch (switchError) {
+                    if (switchError.code === 4902) {
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [{
+                                chainId: '0x2105',
+                                chainName: 'Base',
+                                nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
+                                rpcUrls: [BASE_RPC_URL],
+                                blockExplorerUrls: [BASE_EXPLORER_URL]
+                            }]
+                        });
+                    } else {
+                        throw switchError;
+                    }
+                }
+
+                nftStatusEl.textContent = `🎨 Creating ${rarity.icon} ${rarity.name} NFT...`;
+                
+                // NFT Metadata
+                const metadata = {
+                    name: `Base Motor Race - ${score.toLocaleString()}m`,
+                    description: `${score.toLocaleString()}m race on Base Motor Race! 🏍️\n\nRarity: ${rarity.name} ${rarity.icon}\nFREE mint on Base`,
+                    image: canvas.toDataURL('image/png'),
+                    attributes: [
+                        { trait_type: 'Distance', value: score },
+                        { trait_type: 'Rarity', value: rarity.name },
+                        { trait_type: 'Game', value: 'Base Motor Race' },
+                        { trait_type: 'Chain', value: 'Base' }
+                    ],
+                    external_url: window.location.origin
+                };
+
+                const metadataJSON = JSON.stringify(metadata);
+                const tokenURI = 'data:application/json;base64,' + btoa(unescape(encodeURIComponent(metadataJSON)));
+
+                const contract = new ethers.Contract(NFT_CONTRACT_ADDRESS, NFT_ABI, signer);
+
+                const gasEstimate = await contract.estimateGas.mint(score, tokenURI);
+                const gasPrice = await provider.getGasPrice();
+                const gasCost = gasEstimate.mul(gasPrice);
+                const gasCostEth = ethers.utils.formatEther(gasCost);
+                
+                nftStatusEl.innerHTML = `⛓️ Minting ${rarity.icon} NFT...<br><small style="color: #00ffff;">FREE! Gas: ~${parseFloat(gasCostEth).toFixed(5)} ETH</small>`;
+                
+                const tx = await contract.mint(score, tokenURI, {
+                    gasLimit: gasEstimate.mul(120).div(100)
+                });
+                
+                nftStatusEl.innerHTML = '⏳ Confirming on Base...<br><small style="color: #ffaa00;">10-30 seconds</small>';
+                
+                const receipt = await tx.wait();
+                
+                let tokenId = 'N/A';
+                if (receipt.events) {
+                    const mintEvent = receipt.events.find(e => e.event === 'NFTMinted');
+                    if (mintEvent && mintEvent.args) {
+                        tokenId = mintEvent.args.tokenId.toString();
+                    }
+                }
+                
+                const explorerLink = `${BASE_EXPLORER_URL}/tx/${receipt.transactionHash}`;
+                const nftLink = `${BASE_EXPLORER_URL}/token/${NFT_CONTRACT_ADDRESS}?a=${tokenId}`;
+                
+                nftStatusEl.innerHTML = `
+                    ✅ ${rarity.icon} ${rarity.name} NFT Minted!<br>
+                    <small>Token #${tokenId}</small><br>
+                    <a href="${nftLink}" target="_blank" style="color: #00ffff; text-decoration: underline;">View on BaseScan</a>
+                `;
+                nftStatusEl.style.color = rarity.color;
+                
+                vibrateDevice(200);
+                
+                console.log('🎉 NFT Minted!');
+                console.log('Transaction:', explorerLink);
+
+            } catch (error) {
+                console.error('Mint Error:', error);
+                
+                let errorMsg = 'Unknown error';
+                if (error.code === 4001) {
+                    errorMsg = 'Transaction rejected';
+                } else if (error.code === 'INSUFFICIENT_FUNDS') {
+                    errorMsg = 'Insufficient ETH for gas';
+                } else if (error.message) {
+                    errorMsg = error.message.slice(0, 100);
+                }
+                
+                nftStatusEl.textContent = `❌ ${errorMsg}`;
+                nftStatusEl.style.color = '#ff0000';
+            }
+        }
+
+        // Mint button event
+        mintNftBtn.addEventListener('click', mintScoreNFT);
+
+        // Base Chain NFT Ayarları
+        const BASE_CHAIN_ID = 8453; // Base Mainnet
+        const NFT_CONTRACT_ADDRESS = '0x...'; // Buraya NFT contract adresi gelecek
+        
+        // Web3 / Wallet bağlantısı
+        let userAddress = null;
+        let finalScoreValue = 0;
+
+        // NFT Mint Fonksiyonu
+        async function mintScoreNFT() {
+            try {
+                nftStatusEl.textContent = '⏳ Connecting wallet...';
+                
+                // MetaMask kontrolü
+                if (typeof window.ethereum === 'undefined') {
+                    nftStatusEl.textContent = '❌ MetaMask not found! Please install MetaMask.';
+                    nftStatusEl.style.color = '#ff0000';
+                    return;
+                }
+
+                // Cüzdan bağlantısı
+                const accounts = await window.ethereum.request({ 
+                    method: 'eth_requestAccounts' 
+                });
+                userAddress = accounts[0];
+
+                // Base Chain'e geçiş
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: '0x2105' }], // 8453 hex
+                    });
+                } catch (switchError) {
+                    // Base chain eklenmemişse ekle
+                    if (switchError.code === 4902) {
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [{
+                                chainId: '0x2105',
+                                chainName: 'Base',
+                                nativeCurrency: {
+                                    name: 'Ethereum',
+                                    symbol: 'ETH',
+                                    decimals: 18
+                                },
+                                rpcUrls: ['https://mainnet.base.org'],
+                                blockExplorerUrls: ['https://basescan.org']
+                            }]
+                        });
+                    }
+                }
+
+                nftStatusEl.textContent = '🎨 Creating NFT...';
+                
+                // NFT Metadata
+                const metadata = {
+                    name: `Base Motor Race #${finalScoreValue}m`,
+                    description: `Amazing race with ${finalScoreValue} meters! 🏍️`,
+                    image: await generateNFTImage(),
+                    attributes: [
+                        { trait_type: 'Distance', value: finalScoreValue },
+                        { trait_type: 'Game', value: 'Base Motor Race' },
+                        { trait_type: 'Date', value: new Date().toISOString() }
+                    ]
+                };
+
+                // Burada normalde blockchain'e yazma işlemi yapılır
+                // Contract çağrısı örneği (gerçek implementasyon gerekli):
+                /*
+                const contract = new ethers.Contract(
+                    NFT_CONTRACT_ADDRESS, 
+                    ABI, 
+                    provider.getSigner()
+                );
+                const tx = await contract.mint(metadata);
+                await tx.wait();
+                */
+
+                // Şimdilik simüle edelim
+                await simulateMinting();
+
+                nftStatusEl.textContent = `✅ NFT minted successfully! Score: ${finalScoreValue}m`;
+                nftStatusEl.style.color = '#00ff00';
+                
+                // IPFS veya Base chain'e kayıt detayları
+                console.log('NFT Metadata:', metadata);
+                console.log('User Address:', userAddress);
+
+            } catch (error) {
+                console.error('NFT Mint Error:', error);
+                nftStatusEl.textContent = `❌ Error: ${error.message}`;
+                nftStatusEl.style.color = '#ff0000';
+            }
+        }
+
+        // NFT için görsel oluştur (canvas snapshot)
+        async function generateNFTImage() {
+            return new Promise((resolve) => {
+                // Oyun bittiğinde canvas'ın bir snapshot'ını al
+                const imageData = canvas.toDataURL('image/png');
+                resolve(imageData);
+            });
+        }
+
+        // Mint işlemini simüle et (gerçek blockchain işlemi için)
+        function simulateMinting() {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve();
+                }, 2000);
+            });
+        }
+
+        // Canvas boyutlarını ayarla
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Oyun değişkenleri
+        let gameRunning = false;
+        let score = 0;
+        let lives = 3;
+        let speed = 3; // Çok yavaş başlangıç
+        let baseSpeed = 3;
+        let lane = 1; // 0=sol, 1=orta, 2=sağ
+        let obstacles = [];
+        let roadLines = [];
+        let animationId;
+        let obstacleSpawnTimer = 0;
+        let gameTime = 0; // Oyun süresi (frame cinsinden)
+        
+        // Hasar sistemi
+        let isInvincible = false; // Hasar almazlık durumu
+        let invincibilityTimer = 0; // Hasar almazlık süresi
+        let blinkTimer = 0; // Yanıp sönme efekti için
+        const INVINCIBILITY_DURATION = 120; // 2 saniye (60 FPS * 2)
+        
+        // Yavaşlama sistemi
+        let slowdownActive = false;
+        let slowdownTimer = 0;
+        const SLOWDOWN_DURATION = 60; // 1 saniye
+        const SLOWDOWN_AMOUNT = 0.5; // Hızın %50'si
+
+        // Motor özellikleri
+        const bike = {
+            width: 60,
+            height: 100,
+            y: 0,
+            getLaneX() {
+                // 5 şerit: [yeşil][sol][orta][sağ][yeşil]
+                // Oynanabilir alanın genişliği
+                const totalWidth = canvas.width;
+                const greenLaneWidth = totalWidth / 5; // Her şerit eşit
+                const roadWidth = greenLaneWidth * 3; // Ortadaki 3 şerit yol
+                const roadStart = greenLaneWidth; // Sol yeşilikten sonra başlıyor
+                
+                const laneWidth = roadWidth / 3;
+                return roadStart + laneWidth * lane + laneWidth / 2 - this.width / 2;
+            }
+        };
+
+        // Yol çizgileri oluştur
+        function initRoadLines() {
+            roadLines = [];
+            for (let i = 0; i < 10; i++) {
+                roadLines.push({
+                    y: i * 100,
+                    // Yol kenarı ağaçları için rastgele değerler
+                    treeLeftY: Math.random() * canvas.height,
+                    treeRightY: Math.random() * canvas.height,
+                    grassOffset: Math.random() * 20
+                });
+            }
+        }
+
+        // Yol kenarlarını çiz (ağaçlar, çimler)
+        function drawRoadSides() {
+            // Yavaşlama aktifse hızı düşür
+            let effectiveSpeed = speed;
+            if (slowdownActive) {
+                effectiveSpeed = speed * SLOWDOWN_AMOUNT;
+            }
+            
+            const laneWidth = canvas.width / 5;
+            const roadStart = laneWidth;
+            const roadEnd = laneWidth * 4;
+
+            // Sol yeşil şerit (en sol)
+            const leftGradient = ctx.createLinearGradient(0, 0, laneWidth, 0);
+            leftGradient.addColorStop(0, '#1a3d1a');
+            leftGradient.addColorStop(0.5, '#2d5a2d');
+            leftGradient.addColorStop(1, '#3d6b3d');
+            ctx.fillStyle = leftGradient;
+            ctx.fillRect(0, 0, laneWidth, canvas.height);
+
+            // Sağ yeşil şerit (en sağ)
+            const rightGradient = ctx.createLinearGradient(roadEnd, 0, canvas.width, 0);
+            rightGradient.addColorStop(0, '#3d6b3d');
+            rightGradient.addColorStop(0.5, '#2d5a2d');
+            rightGradient.addColorStop(1, '#1a3d1a');
+            ctx.fillStyle = rightGradient;
+            ctx.fillRect(roadEnd, 0, laneWidth, canvas.height);
+
+            // Yol kenarı beyaz çizgileri
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 4;
+            
+            // Sol kenar çizgisi
+            ctx.beginPath();
+            ctx.moveTo(roadStart, 0);
+            ctx.lineTo(roadStart, canvas.height);
+            ctx.stroke();
+            
+            // Sağ kenar çizgisi
+            ctx.beginPath();
+            ctx.moveTo(roadEnd, 0);
+            ctx.lineTo(roadEnd, canvas.height);
+            ctx.stroke();
+
+            // Çim detayları ve ağaçlar
+            roadLines.forEach((line) => {
+                const grassY = (line.y + line.grassOffset) % canvas.height;
+                
+                // Sol yeşil şerit çimleri
+                ctx.strokeStyle = '#4a7a4a';
+                ctx.lineWidth = 1.5;
+                for (let i = 0; i < 4; i++) {
+                    const x = laneWidth * 0.2 + i * (laneWidth * 0.2);
+                    ctx.beginPath();
+                    ctx.moveTo(x, grassY);
+                    ctx.lineTo(x - 1, grassY - 6);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(x, grassY);
+                    ctx.lineTo(x + 1, grassY - 5);
+                    ctx.stroke();
+                }
+
+                // Sağ yeşil şerit çimleri
+                for (let i = 0; i < 4; i++) {
+                    const x = roadEnd + laneWidth * 0.2 + i * (laneWidth * 0.2);
+                    ctx.beginPath();
+                    ctx.moveTo(x, grassY);
+                    ctx.lineTo(x - 1, grassY - 6);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(x, grassY);
+                    ctx.lineTo(x + 1, grassY - 5);
+                    ctx.stroke();
+                }
+            });
+
+            // Ağaçlar - sol ve sağ yeşil şeritlere
+            roadLines.forEach((line) => {
+                // Sol yeşil şeritte ağaçlar
+                drawTree(laneWidth * 0.5, line.treeLeftY);
+                
+                // Sağ yeşil şeritte ağaçlar
+                drawTree(roadEnd + laneWidth * 0.5, line.treeRightY);
+                
+                // Ağaçları hareket ettir (yavaşlama varsa daha yavaş)
+                line.treeLeftY += effectiveSpeed * 0.8;
+                line.treeRightY += effectiveSpeed * 0.8;
+                
+                if (line.treeLeftY > canvas.height) {
+                    line.treeLeftY = -100;
+                }
+                if (line.treeRightY > canvas.height) {
+                    line.treeRightY = -100;
+                }
+            });
+        }
+
+        // Ağaç çiz - daha gerçekçi
+        function drawTree(x, y) {
+            // Gövde
+            ctx.fillStyle = '#3d2817';
+            ctx.fillRect(x - 3, y + 15, 6, 20);
+
+            // Taç (koyu yeşil altta)
+            ctx.fillStyle = '#2d5a2d';
+            ctx.beginPath();
+            ctx.arc(x, y + 5, 12, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Taç (orta ton)
+            ctx.fillStyle = '#3d6b3d';
+            ctx.beginPath();
+            ctx.arc(x - 2, y + 2, 10, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Taç (açık yeşil üstte)
+            ctx.fillStyle = '#4a7a4a';
+            ctx.beginPath();
+            ctx.arc(x - 3, y, 7, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Yol çizgilerini çiz
+        function drawRoadLines() {
+            // Yavaşlama aktifse hızı düşür
+            let effectiveSpeed = speed;
+            if (slowdownActive) {
+                effectiveSpeed = speed * SLOWDOWN_AMOUNT;
+            }
+            
+            const laneWidth = canvas.width / 5;
+            const roadStart = laneWidth;
+            const roadLaneWidth = laneWidth; // Her yol şeridi eşit
+            
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([20, 20]);
+
+            roadLines.forEach(line => {
+                // Sol şerit çizgisi (sol yol şeridi ile orta arasında)
+                const line1X = roadStart + roadLaneWidth;
+                ctx.beginPath();
+                ctx.moveTo(line1X, line.y);
+                ctx.lineTo(line1X, line.y + 50);
+                ctx.stroke();
+
+                // Sağ şerit çizgisi (orta ile sağ yol şeridi arasında)
+                const line2X = roadStart + roadLaneWidth * 2;
+                ctx.beginPath();
+                ctx.moveTo(line2X, line.y);
+                ctx.lineTo(line2X, line.y + 50);
+                ctx.stroke();
+
+                // Çizgileri aşağı hareket ettir (yavaşlama varsa daha yavaş)
+                line.y += effectiveSpeed;
+
+                // Ekranın altına ulaştıysa yukarı taşı
+                if (line.y > canvas.height) {
+                    line.y = -50;
+                    line.grassOffset = Math.random() * 20;
+                }
+            });
+
+            ctx.setLineDash([]);
+        }
+
+        // Motor çiz
+        function drawBike() {
+            const x = bike.getLaneX();
+            bike.y = canvas.height - 200;
+
+            // Hasar almazlık durumunda yanıp sönme efekti
+            if (isInvincible) {
+                blinkTimer++;
+                // Her 8 frame'de bir görünürlüğü değiştir
+                if (Math.floor(blinkTimer / 8) % 2 === 0) {
+                    return; // Motor çizilmez (sönük)
+                }
+            }
+
+            ctx.save();
+            
+            // Klasik Sportif Motor (Gümüş-Siyah)
+            
+            // Arka tekerlek - siyah lastik
+            ctx.fillStyle = '#1a1a1a';
+            ctx.beginPath();
+            ctx.ellipse(x + 20, bike.y + 75, 14, 16, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Arka tekerlek lastik detayı
+            ctx.strokeStyle = '#0a0a0a';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.ellipse(x + 20, bike.y + 75, 14, 16, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Arka jant - gümüş
+            ctx.fillStyle = '#b8b8b8';
+            ctx.beginPath();
+            ctx.ellipse(x + 20, bike.y + 75, 7, 9, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Arka süspansiyon ve salıncak kolu
+            ctx.strokeStyle = '#2a2a2a';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(x + 20, bike.y + 60);
+            ctx.lineTo(x + 28, bike.y + 40);
+            ctx.stroke();
+
+            // Motor gövdesi - gümüş metalik
+            ctx.fillStyle = '#d0d0d0';
+            ctx.fillRect(x + 22, bike.y + 35, 20, 25);
+            
+            // Motor gölgesi
+            ctx.fillStyle = '#9a9a9a';
+            ctx.fillRect(x + 22, bike.y + 50, 20, 10);
+
+            // Depo - klasik şekil (gümüş)
+            ctx.fillStyle = '#c8c8c8';
+            ctx.beginPath();
+            ctx.ellipse(x + 32, bike.y + 30, 14, 10, 0, 0, Math.PI);
+            ctx.fill();
+            
+            // Depo üst kısım
+            ctx.fillStyle = '#e0e0e0';
+            ctx.beginPath();
+            ctx.ellipse(x + 32, bike.y + 28, 12, 8, 0, 0, Math.PI);
+            ctx.fill();
+
+            // Depo kapağı
+            ctx.strokeStyle = '#5a5a5a';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(x + 32, bike.y + 25, 4, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Gidon ve ön bağlantı
+            ctx.strokeStyle = '#3a3a3a';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(x + 28, bike.y + 20);
+            ctx.lineTo(x + 40, bike.y + 15);
+            ctx.lineTo(x + 42, bike.y + 55);
+            ctx.stroke();
+
+            // Gidon tutacağı
+            ctx.strokeStyle = '#1a1a1a';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(x + 35, bike.y + 15);
+            ctx.lineTo(x + 45, bike.y + 15);
+            ctx.stroke();
+
+            // Sele - siyah deri
+            ctx.fillStyle = '#1a1a1a';
+            ctx.beginPath();
+            ctx.ellipse(x + 28, bike.y + 38, 10, 6, -0.1, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Sele dikişi
+            ctx.strokeStyle = '#4a4a4a';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(x + 22, bike.y + 38);
+            ctx.lineTo(x + 34, bike.y + 38);
+            ctx.stroke();
+
+            // Ön çamurluk - gümüş
+            ctx.fillStyle = '#b8b8b8';
+            ctx.beginPath();
+            ctx.arc(x + 42, bike.y + 65, 18, Math.PI, 0, true);
+            ctx.fill();
+
+            // Ön tekerlek - siyah lastik
+            ctx.fillStyle = '#1a1a1a';
+            ctx.beginPath();
+            ctx.ellipse(x + 42, bike.y + 75, 14, 16, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Ön tekerlek lastik detayı
+            ctx.strokeStyle = '#0a0a0a';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.ellipse(x + 42, bike.y + 75, 14, 16, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Ön jant - gümüş
+            ctx.fillStyle = '#b8b8b8';
+            ctx.beginPath();
+            ctx.ellipse(x + 42, bike.y + 75, 7, 9, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Jant telleri
+            ctx.strokeStyle = '#9a9a9a';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < 4; i++) {
+                const angle = (i * Math.PI) / 2;
+                ctx.beginPath();
+                ctx.moveTo(x + 42, bike.y + 75);
+                ctx.lineTo(x + 42 + Math.cos(angle) * 6, bike.y + 75 + Math.sin(angle) * 8);
+                ctx.stroke();
+            }
+
+            // Far - yuvarlak klasik
+            ctx.fillStyle = '#ffffcc';
+            ctx.shadowColor = '#ffff99';
+            ctx.shadowBlur = 15;
+            ctx.beginPath();
+            ctx.arc(x + 40, bike.y + 8, 7, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Far çerçevesi
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = '#5a5a5a';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(x + 40, bike.y + 8, 7, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Far ışık huzmesi - daha yumuşak
+            ctx.fillStyle = 'rgba(255, 255, 220, 0.08)';
+            ctx.beginPath();
+            ctx.moveTo(x + 40, bike.y + 8);
+            ctx.lineTo(x + 30, bike.y - 50);
+            ctx.lineTo(x + 50, bike.y - 50);
+            ctx.closePath();
+            ctx.fill();
+
+            // Egzoz borusu - klasik krom
+            ctx.strokeStyle = '#c0c0c0';
+            ctx.lineWidth = 4;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(x + 15, bike.y + 55);
+            ctx.lineTo(x + 10, bike.y + 75);
+            ctx.stroke();
+
+            // Egzoz ucu - siyah
+            ctx.fillStyle = '#1a1a1a';
+            ctx.beginPath();
+            ctx.ellipse(x + 10, bike.y + 75, 3, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Arka stop lambası - kırmızı LED
+            ctx.fillStyle = '#cc0000';
+            ctx.beginPath();
+            ctx.rect(x + 20, bike.y + 80, 6, 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        // Engel oluştur
+        function createObstacle() {
+            const randomLane = Math.floor(Math.random() * 3); // 0, 1, veya 2 (sol-orta-sağ)
+            const laneWidth = canvas.width / 5;
+            const roadStart = laneWidth;
+            const roadLaneWidth = laneWidth;
+            
+            const obstacleX = roadStart + roadLaneWidth * randomLane + roadLaneWidth / 2 - 30;
+            
+            obstacles.push({
+                x: obstacleX,
+                y: -100,
+                width: 60,
+                height: 80,
+                lane: randomLane
+            });
+        }
+
+        // Engelleri çiz ve hareket ettir
+        function updateObstacles() {
+            // Yavaşlama aktifse hızı düşür
+            let effectiveSpeed = speed;
+            if (slowdownActive) {
+                effectiveSpeed = speed * SLOWDOWN_AMOUNT;
+            }
+            
+            obstacles.forEach((obstacle, index) => {
+                // Gerçekçi Trafik Bariyeri çiz
+                ctx.save();
+
+                // Bariyer ana gövdesi (turuncu)
+                ctx.fillStyle = '#ff6600';
+                ctx.fillRect(obstacle.x + 5, obstacle.y, obstacle.width - 10, obstacle.height);
+
+                // Beyaz reflektör şeritleri
+                ctx.fillStyle = '#ffffff';
+                const stripeHeight = 12;
+                const stripeCount = Math.floor(obstacle.height / (stripeHeight * 2));
+                
+                for (let i = 0; i < stripeCount; i++) {
+                    const yPos = obstacle.y + i * (stripeHeight * 2) + 4;
+                    ctx.fillRect(obstacle.x + 5, yPos, obstacle.width - 10, stripeHeight);
+                }
+
+                // Bariyer kenarları (koyu gri)
+                ctx.strokeStyle = '#333333';
+                ctx.lineWidth = 4;
+                ctx.strokeRect(obstacle.x + 5, obstacle.y, obstacle.width - 10, obstacle.height);
+
+                // Üst kısım (koyu turuncu kap)
+                ctx.fillStyle = '#cc5200';
+                ctx.fillRect(obstacle.x, obstacle.y - 5, obstacle.width, 8);
+
+                // Alt kısım (koyu turuncu taban)
+                ctx.fillStyle = '#cc5200';
+                ctx.fillRect(obstacle.x, obstacle.y + obstacle.height - 3, obstacle.width, 8);
+
+                // Hafif gölge efekti
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+                ctx.shadowBlur = 8;
+                ctx.shadowOffsetY = 5;
+
+                ctx.restore();
+
+                // Engeli aşağı hareket ettir (yavaşlama varsa daha yavaş)
+                obstacle.y += effectiveSpeed;
+
+                // Çarpışma kontrolü - sadece hasar almazlık yoksa
+                if (!isInvincible && checkCollision(obstacle)) {
+                    // Crash sesi çal
+                    playCrashSound();
+                    
+                    // Can kaybı
+                    lives--;
+                    updateHearts();
+                    
+                    // Hasar almazlık başlat
+                    isInvincible = true;
+                    invincibilityTimer = INVINCIBILITY_DURATION;
+                    blinkTimer = 0;
+                    
+                    // Yavaşlama başlat
+                    slowdownActive = true;
+                    slowdownTimer = SLOWDOWN_DURATION;
+                    
+                    // Engeli kaldır
+                    obstacles.splice(index, 1);
+                    
+                    if (lives <= 0) {
+                        gameOver();
+                    }
+                }
+
+                // Ekranın altına ulaştıysa kaldır
+                if (obstacle.y > canvas.height) {
+                    obstacles.splice(index, 1);
+                }
+            });
+        }
+
+        // Çarpışma kontrolü
+        function checkCollision(obstacle) {
+            const bikeX = bike.getLaneX();
+            return (
+                bikeX < obstacle.x + obstacle.width &&
+                bikeX + bike.width > obstacle.x &&
+                bike.y < obstacle.y + obstacle.height &&
+                bike.y + bike.height > obstacle.y
+            );
+        }
+
+        // Kalpleri güncelle
+        function updateHearts() {
+            const hearts = heartsEl.querySelectorAll('.heart');
+            hearts.forEach((heart, index) => {
+                if (index >= lives) {
+                    heart.style.opacity = '0.2';
+                } else {
+                    heart.style.opacity = '1';
+                }
+            });
+        }
+
+        // Oyun döngüsü
+        function gameLoop() {
+            if (!gameRunning) return;
+
+            // Ekranı temizle
+            ctx.fillStyle = 'rgba(10, 0, 21, 0.3)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Yol kenarlarını çiz (ağaçlar, çimler)
+            drawRoadSides();
+
+            // Yol çizgilerini çiz
+            drawRoadLines();
+
+            // Motor çiz
+            drawBike();
+
+            // Engelleri güncelle
+            updateObstacles();
+
+            // Oyun süresini artır
+            gameTime++;
+            
+            // Hasar almazlık süresini güncelle
+            if (isInvincible) {
+                invincibilityTimer--;
+                if (invincibilityTimer <= 0) {
+                    isInvincible = false;
+                    blinkTimer = 0;
+                }
+            }
+            
+            // Yavaşlama süresini güncelle
+            if (slowdownActive) {
+                slowdownTimer--;
+                if (slowdownTimer <= 0) {
+                    slowdownActive = false;
+                }
+            }
+            
+            // Saniye hesapla (60 FPS varsayımı)
+            const seconds = Math.floor(gameTime / 60);
+            
+            // Hız artışı sistemi: Her 10 saniyede 0.4 hız artışı
+            const speedMultiplier = Math.floor(seconds / 10);
+            const targetSpeed = baseSpeed + (speedMultiplier * 0.4);
+            
+            // Hızı yumuşak bir şekilde hedef hıza yaklaştır
+            if (speed < targetSpeed && targetSpeed <= 7.0) {
+                speed += 0.002; // Çok yumuşak geçiş
+            }
+            
+            // Yavaşlama aktifse hızı düşür (skor ve gösterim için)
+            let currentEffectiveSpeed = speed;
+            if (slowdownActive) {
+                currentEffectiveSpeed = speed * SLOWDOWN_AMOUNT;
+            }
+            
+            // Motor sesini güncelle
+            updateEngineSound();
+            
+            // Skor artır (yavaşlama varsa daha yavaş)
+            score += currentEffectiveSpeed * 0.1;
+            scoreEl.textContent = Math.floor(score);
+            
+            // Hızı km/h olarak göster (daha anlamlı sayılar için)
+            speedEl.textContent = Math.floor(currentEffectiveSpeed * 30);
+
+            // Kontrollü bariyer oluşturma sistemi
+            obstacleSpawnTimer++;
+            
+            // Hıza göre dinamik spawn aralığı
+            // Yavaşken: 100-180 frame arası (1.6-3 saniye)
+            // Hızlıyken: 70-130 frame arası (1.1-2.1 saniye)
+            const minDelay = Math.max(70, 100 - (speed - baseSpeed) * 10);
+            const maxDelay = Math.max(130, 180 - (speed - baseSpeed) * 15);
+            const spawnDelay = minDelay + Math.random() * (maxDelay - minDelay);
+            
+            if (obstacleSpawnTimer > spawnDelay) {
+                createObstacle();
+                obstacleSpawnTimer = 0;
+            }
+
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        // Oyunu başlat
+        function startGame() {
+            score = 0;
+            lives = 3;
+            speed = 3; // Çok yavaş başlangıç
+            baseSpeed = 3;
+            lane = 1;
+            obstacles = [];
+            obstacleSpawnTimer = 0;
+            gameTime = 0; // Oyun süresini sıfırla
+            isInvincible = false; // Hasar almazlık kapalı
+            invincibilityTimer = 0;
+            blinkTimer = 0;
+            slowdownActive = false; // Yavaşlama kapalı
+            slowdownTimer = 0;
+            gameRunning = true;
+
+            initRoadLines();
+            updateHearts();
+
+            startScreen.classList.add('hidden');
+            gameOverScreen.classList.add('hidden');
+
+            // Sesleri başlat
+            startAudio();
+
+            gameLoop();
+        }
+
+        // Oyunu bitir
+        function gameOver() {
+            gameRunning = false;
+            cancelAnimationFrame(animationId);
+            
+            finalScoreValue = Math.floor(score);
+            finalScoreEl.textContent = finalScoreValue + ' m';
+            gameOverScreen.classList.remove('hidden');
+            nftStatusEl.textContent = ''; // Önceki mesajları temizle
+            nftStatusEl.style.color = '#00ffff';
+
+            // Sesleri durdur
+            stopAudio();
+        }
+
+        // Oyunu resetle
+        function resetGame() {
+            score = 0;
+            speed = baseSpeed;
+            lives = 3;
+            lane = 1;
+            obstacles = [];
+            invincible = false;
+            invincibleTimer = 0;
+            
+            // UI'yi güncelle
+            scoreEl.textContent = '0';
+            speedEl.textContent = Math.floor(speed);
+            
+            // Canları yeniden göster
+            const hearts = heartsEl.querySelectorAll('.heart');
+            hearts.forEach(heart => heart.style.display = 'inline');
+            
+            // Sesleri durdur
+            stopAudio();
+        }
+
+        // Kontroller
+        function moveLeft() {
+            if (gameRunning && lane > 0) {
+                lane--;
+            }
+        }
+
+        function moveRight() {
+            if (gameRunning && lane < 2) {
+                lane++;
+            }
+        }
+
+        // Event listeners
+        startBtn.addEventListener('click', startGame);
+        restartBtn.addEventListener('click', startGame);
+        mintNftBtn.addEventListener('click', mintScoreNFT);
+
+        // Mobil dokunmatik kontroller
+        leftBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            moveLeft();
+        });
+
+        rightBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            moveRight();
+        });
+
+        // Mouse kontrolleri (desktop test için)
+        leftBtn.addEventListener('click', moveLeft);
+        rightBtn.addEventListener('click', moveRight);
+
+        // Klavye kontrolleri
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') moveLeft();
+            if (e.key === 'ArrowRight') moveRight();
+            if (e.key === ' ' && !gameRunning) {
+                if (!startScreen.classList.contains('hidden')) {
+                    startGame();
+                } else if (!gameOverScreen.classList.contains('hidden')) {
+                    startGame();
+                }
+            }
+        });
+
+        // Arka plan müziği ve ses efektleri
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        let backgroundMusic = null;
+        let engineSound = null;
+        let musicNodes = [];
+
+        // Crash ses efekti
+        function playCrashSound() {
+            // Metal çarpma sesi (noise + low frequency)
+            const bufferSize = audioContext.sampleRate * 0.3;
+            const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+            const data = buffer.getChannelData(0);
+            
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize / 5));
+            }
+            
+            const noise = audioContext.createBufferSource();
+            const gain = audioContext.createGain();
+            const filter = audioContext.createBiquadFilter();
+            
+            noise.buffer = buffer;
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(800, audioContext.currentTime);
+            
+            gain.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(audioContext.destination);
+            
+            noise.start();
+            
+            // Ek metalik vuruş sesi
+            const impactOsc = audioContext.createOscillator();
+            const impactGain = audioContext.createGain();
+            
+            impactOsc.frequency.setValueAtTime(100, audioContext.currentTime);
+            impactOsc.frequency.exponentialRampToValueAtTime(50, audioContext.currentTime + 0.1);
+            
+            impactGain.gain.setValueAtTime(0.2, audioContext.currentTime);
+            impactGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+            
+            impactOsc.connect(impactGain);
+            impactGain.connect(audioContext.destination);
+            
+            impactOsc.start();
+            impactOsc.stop(audioContext.currentTime + 0.1);
+        }
+
+        // Motor sesi oluştur (synth ile)
+        function createEngineSound() {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.setValueAtTime(60 + speed * 3, audioContext.currentTime);
+            
+            gainNode.gain.setValueAtTime(0.05, audioContext.currentTime); // Daha sessiz
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            return { oscillator, gainNode };
+        }
+
+        // Motor sesini güncelle (hıza göre)
+        function updateEngineSound() {
+            if (engineSound && engineSound.oscillator) {
+                engineSound.oscillator.frequency.setValueAtTime(
+                    60 + speed * 3, 
+                    audioContext.currentTime
+                );
+            }
+        }
+
+        // Hafif arka plan müziği (melodik)
+        function createBackgroundMusic() {
+            // Melodi notaları (C major scale - neşeli)
+            const melody = [
+                { note: 523.25, duration: 0.4 }, // C
+                { note: 587.33, duration: 0.4 }, // D
+                { note: 659.25, duration: 0.4 }, // E
+                { note: 783.99, duration: 0.4 }, // G
+                { note: 659.25, duration: 0.4 }, // E
+                { note: 587.33, duration: 0.4 }, // D
+                { note: 523.25, duration: 0.8 }, // C
+            ];
+
+            let melodyIndex = 0;
+            let nextNoteTime = audioContext.currentTime;
+
+            // Hafif hi-hat
+            function playHiHat(time) {
+                const bufferSize = audioContext.sampleRate * 0.05;
+                const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+                const data = buffer.getChannelData(0);
+                
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize / 20));
+                }
+                
+                const noise = audioContext.createBufferSource();
+                const gain = audioContext.createGain();
+                
+                noise.buffer = buffer;
+                gain.gain.setValueAtTime(0.02, time); // Çok daha sessiz
+                
+                noise.connect(gain);
+                gain.connect(audioContext.destination);
+                
+                noise.start(time);
+                
+                musicNodes.push({ source: noise, gain });
+            }
+
+            // Melodik nota çal
+            function playMelodyNote(time, frequency, duration) {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                
+                osc.type = 'sine'; // Yumuşak ton
+                osc.frequency.setValueAtTime(frequency, time);
+                
+                // Fade in/out
+                gain.gain.setValueAtTime(0, time);
+                gain.gain.linearRampToValueAtTime(0.08, time + 0.05); // Hafif ses
+                gain.gain.linearRampToValueAtTime(0, time + duration);
+                
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                
+                osc.start(time);
+                osc.stop(time + duration);
+                
+                musicNodes.push({ oscillator: osc, gain });
+            }
+
+            // Müzik döngüsü
+            function scheduleMusic() {
+                if (!gameRunning) return;
+                
+                const currentTime = audioContext.currentTime;
+                
+                // Notaları planla
+                while (nextNoteTime < currentTime + 0.2) {
+                    const note = melody[melodyIndex];
+                    
+                    // Melodi çal
+                    playMelodyNote(nextNoteTime, note.note, note.duration);
+                    
+                    // Hi-hat ekle (her nota ile)
+                    playHiHat(nextNoteTime);
+                    
+                    nextNoteTime += note.duration;
+                    melodyIndex = (melodyIndex + 1) % melody.length;
+                }
+                
+                requestAnimationFrame(scheduleMusic);
+            }
+            
+            scheduleMusic();
+        }
+
+        // Ses sistemini başlat
+        function startAudio() {
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            
+            // Motor sesi başlat
+            if (!engineSound) {
+                engineSound = createEngineSound();
+                engineSound.oscillator.start();
+            }
+            
+            // Arka plan müziği başlat
+            createBackgroundMusic();
+        }
+
+        // Sesleri durdur
+        function stopAudio() {
+            if (engineSound) {
+                try {
+                    engineSound.oscillator.stop();
+                } catch (e) {
+                    // Zaten durdurulmuş
+                }
+                engineSound = null;
+            }
+            
+            // Müzik nodlarını temizle
+            musicNodes.forEach(node => {
+                try {
+                    if (node.oscillator) node.oscillator.stop();
+                    if (node.source) node.source.stop();
+                } catch (e) {
+                    // Zaten durdurulmuş
+                }
+            });
+            musicNodes = [];
+        }
+
+        // ====================================
+        // AYARLAR SİSTEMİ
+        // ====================================
+        let gameSettings = {
+            musicVolume: 0.7,
+            sfxVolume: 1.0,
+            musicEnabled: true,
+            vibrationEnabled: true
+        };
+
+        function loadSettings() {
+            const saved = localStorage.getItem('baseMotorRaceSettings');
+            if (saved) {
+                gameSettings = JSON.parse(saved);
+                applySettings();
+            }
+        }
+
+        function saveSettings() {
+            localStorage.setItem('baseMotorRaceSettings', JSON.stringify(gameSettings));
+        }
+
+        function applySettings() {
+            document.getElementById('musicVolumeSlider').value = gameSettings.musicVolume * 100;
+            document.getElementById('sfxVolumeSlider').value = gameSettings.sfxVolume * 100;
+            document.getElementById('musicToggle').checked = gameSettings.musicEnabled;
+            document.getElementById('vibrationToggle').checked = gameSettings.vibrationEnabled;
+            updateVolumeDisplays();
+            updateGameVolume();
+        }
+
+        function updateVolumeDisplays() {
+            document.getElementById('musicVolumeValue').textContent = 
+                Math.round(gameSettings.musicVolume * 100) + '%';
+            document.getElementById('sfxVolumeValue').textContent = 
+                Math.round(gameSettings.sfxVolume * 100) + '%';
+            document.getElementById('musicStatus').textContent = 
+                gameSettings.musicEnabled ? 'ON' : 'OFF';
+            document.getElementById('vibrationStatus').textContent = 
+                gameSettings.vibrationEnabled ? 'ON' : 'OFF';
+        }
+
+        function updateGameVolume() {
+            // Motor sesi
+            if (engineSound && engineSound.gainNode) {
+                const baseGain = 0.05;
+                engineSound.gainNode.gain.setValueAtTime(
+                    gameSettings.musicEnabled ? baseGain * gameSettings.musicVolume : 0,
+                    audioContext.currentTime
+                );
+            }
+            
+            // Background music
+            musicNodes.forEach(node => {
+                if (node.gain) {
+                    const baseGain = 0.08;
+                    node.gain.gain.setValueAtTime(
+                        gameSettings.musicEnabled ? baseGain * gameSettings.musicVolume : 0,
+                        audioContext.currentTime
+                    );
+                }
+            });
+        }
+
+        function vibrateDevice(duration = 50) {
+            if (gameSettings.vibrationEnabled && 'vibrate' in navigator) {
+                navigator.vibrate(duration);
+            }
+        }
+
+        // ====================================
+        // MENÜ NAVİGASYONU
+        // ====================================
+        document.getElementById('playBtn').addEventListener('click', function() {
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('startScreen').classList.remove('hidden');
+        });
+
+        document.getElementById('nftInfoBtn').addEventListener('click', function() {
+            document.getElementById('nftInfoMenu').classList.add('active');
+        });
+
+        document.getElementById('settingsBtn').addEventListener('click', function() {
+            document.getElementById('settingsMenu').classList.add('active');
+        });
+
+        document.getElementById('backToMenuBtn').addEventListener('click', function() {
+            document.getElementById('settingsMenu').classList.remove('active');
+            saveSettings();
+        });
+
+        document.getElementById('backToMenuFromInfoBtn').addEventListener('click', function() {
+            document.getElementById('nftInfoMenu').classList.remove('active');
+        });
+
+        document.getElementById('backToMenuFromGameBtn').addEventListener('click', function() {
+            // Game Over'dan ana menüye dön
+            gameOverScreen.classList.add('hidden');
+            document.getElementById('mainMenu').style.display = 'flex';
+            
+            // Oyunu resetle
+            resetGame();
+        });
+
+        // Ayarlar Event Listeners
+        document.getElementById('musicVolumeSlider').addEventListener('input', function(e) {
+            gameSettings.musicVolume = e.target.value / 100;
+            updateVolumeDisplays();
+            updateGameVolume();
+        });
+
+        document.getElementById('sfxVolumeSlider').addEventListener('input', function(e) {
+            gameSettings.sfxVolume = e.target.value / 100;
+            updateVolumeDisplays();
+        });
+
+        document.getElementById('musicToggle').addEventListener('change', function(e) {
+            gameSettings.musicEnabled = e.target.checked;
+            updateVolumeDisplays();
+            updateGameVolume();
+        });
+
+        document.getElementById('vibrationToggle').addEventListener('change', function(e) {
+            gameSettings.vibrationEnabled = e.target.checked;
+            updateVolumeDisplays();
+        });
+
+        // Sayfa yüklendiğinde
+        window.addEventListener('DOMContentLoaded', function() {
+            loadSettings();
+            document.getElementById('mainMenu').style.display = 'flex';
+            document.getElementById('startScreen').classList.add('hidden');
+        });
+    </script>
+</body>
+</html>

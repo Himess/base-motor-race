@@ -1,0 +1,12 @@
+{
+  "version": "1",
+  "name": "Base Motor Race",
+  "subtitle": "Racing Game on Base",
+  "description": "A thrilling motorcycle racing game. Dodge barriers, set high scores!",
+  "iconUrl": "https://YOUR-VERCEL-URL.vercel.app/icon.png",
+  "splashImageUrl": "https://YOUR-VERCEL-URL.vercel.app/splash.png",
+  "splashBackgroundColor": "#0a0015",
+  "homeUrl": "https://YOUR-VERCEL-URL.vercel.app",
+  "primaryCategory": "games",
+  "tags": ["game", "racing", "arcade", "base"]
+}

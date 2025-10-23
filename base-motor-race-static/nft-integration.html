@@ -1,0 +1,156 @@
+<!-- index.html içine eklenecek güncellemeler -->
+
+<!-- Head'e ekle: -->
+<script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+
+<!-- Script bölümüne ekle (const BASE_CHAIN_ID = ... kısmını değiştir): -->
+<script>
+// Base Sepolia (Testnet) için
+const BASE_CHAIN_ID = 84532; // Base Sepolia
+const BASE_RPC_URL = 'https://sepolia.base.org';
+const BASE_EXPLORER_URL = 'https://sepolia.basescan.org';
+
+// TODO: Remix'te deploy ettikten sonra buraya contract adresini yapıştır!
+const NFT_CONTRACT_ADDRESS = '0x0000000000000000000000000000000000000000'; 
+
+// NFT Contract ABI (sadece mint fonksiyonu)
+const NFT_ABI = [
+    "function mint(address to, string memory tokenURI) public returns (uint256)",
+    "function tokenURI(uint256 tokenId) public view returns (string memory)",
+    "function balanceOf(address owner) public view returns (uint256)",
+    "function totalSupply() public view returns (uint256)"
+];
+
+let provider = null;
+let signer = null;
+
+// mintScoreNFT fonksiyonunu komple değiştir:
+async function mintScoreNFT() {
+    try {
+        nftStatusEl.textContent = '⏳ Connecting wallet...';
+        
+        if (typeof window.ethereum === 'undefined') {
+            nftStatusEl.textContent = '❌ Install MetaMask first!';
+            nftStatusEl.style.color = '#ff0000';
+            window.open('https://metamask.io/download/', '_blank');
+            return;
+        }
+
+        // Provider oluştur
+        provider = new ethers.providers.Web3Provider(window.ethereum);
+        
+        // Cüzdan bağla
+        const accounts = await window.ethereum.request({ 
+            method: 'eth_requestAccounts' 
+        });
+        userAddress = accounts[0];
+        signer = provider.getSigner();
+
+        // Base Sepolia'ya geç
+        try {
+            await window.ethereum.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: '0x14a34' }], // 84532 hex
+            });
+        } catch (switchError) {
+            if (switchError.code === 4902) {
+                await window.ethereum.request({
+                    method: 'wallet_addEthereumChain',
+                    params: [{
+                        chainId: '0x14a34',
+                        chainName: 'Base Sepolia',
+                        nativeCurrency: {
+                            name: 'Ethereum',
+                            symbol: 'ETH',
+                            decimals: 18
+                        },
+                        rpcUrls: [BASE_RPC_URL],
+                        blockExplorerUrls: [BASE_EXPLORER_URL]
+                    }]
+                });
+            } else {
+                throw switchError;
+            }
+        }
+
+        // Contract address kontrolü
+        if (NFT_CONTRACT_ADDRESS === '0x0000000000000000000000000000000000000000') {
+            nftStatusEl.textContent = '⚠️ Contract not deployed yet! Check NFT-SETUP.md';
+            nftStatusEl.style.color = '#ffaa00';
+            return;
+        }
+
+        nftStatusEl.textContent = '🎨 Creating NFT metadata...';
+        
+        // Metadata oluştur
+        const metadata = {
+            name: `Base Motor Race - ${finalScoreValue}m`,
+            description: `Epic ${finalScoreValue}m race on Base Motor Race! 🏍️💨`,
+            image: await generateNFTImage(),
+            attributes: [
+                { trait_type: 'Distance (m)', value: finalScoreValue },
+                { trait_type: 'Game', value: 'Base Motor Race' },
+                { trait_type: 'Timestamp', value: Date.now() },
+                { trait_type: 'Player', value: userAddress.slice(0, 6) + '...' + userAddress.slice(-4) }
+            ],
+            external_url: 'https://your-game-url.vercel.app'
+        };
+
+        // Base64 encode metadata
+        const metadataJSON = JSON.stringify(metadata);
+        const tokenURI = 'data:application/json;base64,' + btoa(unescape(encodeURIComponent(metadataJSON)));
+
+        nftStatusEl.textContent = '⛓️ Minting NFT on Base...';
+
+        // Contract'a bağlan
+        const contract = new ethers.Contract(NFT_CONTRACT_ADDRESS, NFT_ABI, signer);
+
+        // Gas estimate
+        const gasEstimate = await contract.estimateGas.mint(userAddress, tokenURI);
+        
+        // Mint!
+        const tx = await contract.mint(userAddress, tokenURI, {
+            gasLimit: gasEstimate.mul(120).div(100) // 20% buffer
+        });
+        
+        nftStatusEl.textContent = '⏳ Confirming transaction...';
+        
+        const receipt = await tx.wait();
+        
+        // Token ID'yi bul
+        let tokenId = 'N/A';
+        if (receipt.events && receipt.events.length > 0) {
+            const transferEvent = receipt.events.find(e => e.event === 'Transfer');
+            if (transferEvent && transferEvent.args) {
+                tokenId = transferEvent.args.tokenId.toString();
+            }
+        }
+        
+        // Başarı mesajı
+        const explorerLink = `${BASE_EXPLORER_URL}/tx/${receipt.transactionHash}`;
+        nftStatusEl.innerHTML = `✅ NFT Minted! Token #${tokenId} - <a href="${explorerLink}" target="_blank" style="color: #00ffff;">View</a>`;
+        nftStatusEl.style.color = '#00ff00';
+        
+        console.log('🎉 NFT Minted!');
+        console.log('Transaction:', explorerLink);
+        console.log('Token ID:', tokenId);
+        console.log('Metadata:', metadata);
+
+    } catch (error) {
+        console.error('NFT Mint Error:', error);
+        
+        let errorMsg = 'Unknown error';
+        
+        if (error.code === 4001) {
+            errorMsg = 'Transaction rejected';
+        } else if (error.code === -32603) {
+            errorMsg = 'Insufficient funds for gas';
+        } else if (error.message) {
+            errorMsg = error.message.slice(0, 100);
+        }
+        
+        nftStatusEl.textContent = `❌ ${errorMsg}`;
+        nftStatusEl.style.color = '#ff0000';
+    }
+}
+</script>

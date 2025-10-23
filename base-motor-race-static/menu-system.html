@@ -1,0 +1,558 @@
+<!-- 
+  ANA MENÜ VE AYARLAR SİSTEMİ
+  index.html'in <style> bölümüne eklenecek CSS ve HTML
+-->
+
+<!-- ==================== CSS - <style> içine ekle ==================== -->
+<style>
+/* Ana Menü */
+#mainMenu {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg, #0a0015 0%, #001a33 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    padding: 20px;
+}
+
+#mainMenu h1 {
+    font-size: 56px;
+    margin-bottom: 10px;
+    background: linear-gradient(45deg, #00ffff, #ff00ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-align: center;
+    animation: glow 2s ease-in-out infinite;
+}
+
+@keyframes glow {
+    0%, 100% { filter: drop-shadow(0 0 20px rgba(0, 255, 255, 0.5)); }
+    50% { filter: drop-shadow(0 0 40px rgba(0, 255, 255, 0.8)); }
+}
+
+#mainMenu .subtitle {
+    font-size: 18px;
+    color: #00ffff;
+    margin-bottom: 50px;
+    text-align: center;
+}
+
+.menu-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    max-width: 300px;
+}
+
+.menu-btn {
+    padding: 18px 40px;
+    font-size: 22px;
+    background: linear-gradient(45deg, #00ffff, #0099ff);
+    border: none;
+    border-radius: 50px;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.4);
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.menu-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 40px rgba(0, 255, 255, 0.6);
+}
+
+.menu-btn:active {
+    transform: scale(0.95);
+}
+
+.menu-btn.secondary {
+    background: linear-gradient(45deg, #6600ff, #9900ff);
+    box-shadow: 0 0 30px rgba(153, 0, 255, 0.4);
+}
+
+/* Ayarlar Menüsü */
+#settingsMenu {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 101;
+    padding: 40px 20px;
+}
+
+#settingsMenu.active {
+    display: flex;
+}
+
+#settingsMenu h2 {
+    font-size: 42px;
+    color: #00ffff;
+    margin-bottom: 40px;
+    text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+}
+
+.setting-item {
+    width: 100%;
+    max-width: 350px;
+    margin-bottom: 30px;
+    background: rgba(0, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 15px;
+    border: 2px solid #00ffff;
+}
+
+.setting-item label {
+    display: block;
+    color: white;
+    font-size: 18px;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.setting-item .value-display {
+    color: #00ffff;
+    font-size: 24px;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+/* Slider */
+.slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 5px;
+    background: linear-gradient(to right, #0099ff 0%, #00ffff 100%);
+    outline: none;
+    margin-bottom: 10px;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #00ffff;
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.8);
+}
+
+.slider::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #00ffff;
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.8);
+    border: none;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 70px;
+    height: 34px;
+    margin: 0 auto;
+    display: block;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #555;
+    transition: 0.4s;
+    border-radius: 34px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+    background: linear-gradient(45deg, #00ffff, #0099ff);
+}
+
+input:checked + .toggle-slider:before {
+    transform: translateX(36px);
+}
+
+.toggle-label {
+    text-align: center;
+    margin-top: 10px;
+    color: #00ffff;
+    font-size: 14px;
+}
+
+.back-btn {
+    margin-top: 30px;
+    padding: 15px 50px;
+    font-size: 20px;
+    background: linear-gradient(45deg, #ff0066, #ff6600);
+    border: none;
+    border-radius: 50px;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 0 30px rgba(255, 0, 102, 0.4);
+}
+
+.back-btn:active {
+    transform: scale(0.95);
+}
+
+/* Leaderboard Önizleme (Ana Menüde) */
+.mini-leaderboard {
+    margin-top: 30px;
+    background: rgba(0, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #00ffff;
+    max-width: 300px;
+    width: 100%;
+}
+
+.mini-leaderboard h3 {
+    color: #00ffff;
+    font-size: 16px;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.mini-leaderboard .leader-item {
+    display: flex;
+    justify-content: space-between;
+    color: white;
+    font-size: 12px;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+.mini-leaderboard .leader-item:last-child {
+    border-bottom: none;
+}
+
+.mini-leaderboard .leader-item .rank {
+    color: #00ffff;
+    font-weight: bold;
+}
+</style>
+
+<!-- ==================== HTML - <div id="gameContainer"> içine ekle ==================== -->
+
+<!-- Ana Menü -->
+<div id="mainMenu">
+    <h1>🏍️ BASE MOTOR RACE</h1>
+    <p class="subtitle">Dodge barriers. Set records. Mint NFTs.</p>
+    
+    <div class="menu-buttons">
+        <button class="menu-btn" id="playBtn">
+            🎮 PLAY GAME
+        </button>
+        <button class="menu-btn secondary" id="settingsBtn">
+            ⚙️ SETTINGS
+        </button>
+        <button class="menu-btn secondary" id="leaderboardBtn">
+            🏆 LEADERBOARD
+        </button>
+    </div>
+    
+    <!-- Mini Leaderboard Önizleme -->
+    <div class="mini-leaderboard">
+        <h3>🏆 Weekly Top 3</h3>
+        <div class="leader-item">
+            <span class="rank">🥇</span>
+            <span id="leader1">Loading...</span>
+        </div>
+        <div class="leader-item">
+            <span class="rank">🥈</span>
+            <span id="leader2">Loading...</span>
+        </div>
+        <div class="leader-item">
+            <span class="rank">🥉</span>
+            <span id="leader3">Loading...</span>
+        </div>
+    </div>
+</div>
+
+<!-- Ayarlar Menüsü -->
+<div id="settingsMenu">
+    <h2>⚙️ SETTINGS</h2>
+    
+    <div class="setting-item">
+        <label>🔊 Music Volume</label>
+        <div class="value-display" id="musicVolumeValue">70%</div>
+        <input type="range" min="0" max="100" value="70" class="slider" id="musicVolumeSlider">
+    </div>
+    
+    <div class="setting-item">
+        <label>🔉 Sound Effects</label>
+        <div class="value-display" id="sfxVolumeValue">100%</div>
+        <input type="range" min="0" max="100" value="100" class="slider" id="sfxVolumeSlider">
+    </div>
+    
+    <div class="setting-item">
+        <label>🎵 Music</label>
+        <label class="toggle-switch">
+            <input type="checkbox" id="musicToggle" checked>
+            <span class="toggle-slider"></span>
+        </label>
+        <div class="toggle-label" id="musicStatus">ON</div>
+    </div>
+    
+    <div class="setting-item">
+        <label>🎮 Vibration</label>
+        <label class="toggle-switch">
+            <input type="checkbox" id="vibrationToggle" checked>
+            <span class="toggle-slider"></span>
+        </label>
+        <div class="toggle-label" id="vibrationStatus">ON</div>
+    </div>
+    
+    <button class="back-btn" id="backToMenuBtn">← BACK TO MENU</button>
+</div>
+
+<!-- ==================== JAVASCRIPT - <script> içine ekle ==================== -->
+<script>
+// ====================================
+// AYARLAR SİSTEMİ
+// ====================================
+
+// Default settings
+let gameSettings = {
+    musicVolume: 0.7,
+    sfxVolume: 1.0,
+    musicEnabled: true,
+    vibrationEnabled: true
+};
+
+// LocalStorage'dan ayarları yükle
+function loadSettings() {
+    const saved = localStorage.getItem('baseMotorRaceSettings');
+    if (saved) {
+        gameSettings = JSON.parse(saved);
+        applySettings();
+    }
+}
+
+// Ayarları kaydet
+function saveSettings() {
+    localStorage.setItem('baseMotorRaceSettings', JSON.stringify(gameSettings));
+}
+
+// Ayarları uygula
+function applySettings() {
+    // UI'yi güncelle
+    document.getElementById('musicVolumeSlider').value = gameSettings.musicVolume * 100;
+    document.getElementById('sfxVolumeSlider').value = gameSettings.sfxVolume * 100;
+    document.getElementById('musicToggle').checked = gameSettings.musicEnabled;
+    document.getElementById('vibrationToggle').checked = gameSettings.vibrationEnabled;
+    
+    updateVolumeDisplays();
+    
+    // Oyun ses ayarlarını güncelle (eğer audio context varsa)
+    if (typeof updateGameVolume === 'function') {
+        updateGameVolume(gameSettings);
+    }
+}
+
+// Volume display güncelle
+function updateVolumeDisplays() {
+    document.getElementById('musicVolumeValue').textContent = 
+        Math.round(gameSettings.musicVolume * 100) + '%';
+    document.getElementById('sfxVolumeValue').textContent = 
+        Math.round(gameSettings.sfxVolume * 100) + '%';
+    document.getElementById('musicStatus').textContent = 
+        gameSettings.musicEnabled ? 'ON' : 'OFF';
+    document.getElementById('vibrationStatus').textContent = 
+        gameSettings.vibrationEnabled ? 'ON' : 'OFF';
+}
+
+// ====================================
+// MENÜ NAVİGASYONU
+// ====================================
+
+document.getElementById('playBtn').addEventListener('click', function() {
+    document.getElementById('mainMenu').style.display = 'none';
+    document.getElementById('startScreen').classList.remove('hidden');
+});
+
+document.getElementById('settingsBtn').addEventListener('click', function() {
+    document.getElementById('settingsMenu').classList.add('active');
+});
+
+document.getElementById('backToMenuBtn').addEventListener('click', function() {
+    document.getElementById('settingsMenu').classList.remove('active');
+    saveSettings();
+});
+
+document.getElementById('leaderboardBtn').addEventListener('click', function() {
+    // Leaderboard sayfasına git veya modal aç
+    showLeaderboard();
+});
+
+// ====================================
+// AYARLAR EVENT LISTENERS
+// ====================================
+
+// Music Volume Slider
+document.getElementById('musicVolumeSlider').addEventListener('input', function(e) {
+    gameSettings.musicVolume = e.target.value / 100;
+    updateVolumeDisplays();
+    applySettings();
+});
+
+// SFX Volume Slider
+document.getElementById('sfxVolumeSlider').addEventListener('input', function(e) {
+    gameSettings.sfxVolume = e.target.value / 100;
+    updateVolumeDisplays();
+    applySettings();
+});
+
+// Music Toggle
+document.getElementById('musicToggle').addEventListener('change', function(e) {
+    gameSettings.musicEnabled = e.target.checked;
+    updateVolumeDisplays();
+    applySettings();
+});
+
+// Vibration Toggle
+document.getElementById('vibrationToggle').addEventListener('change', function(e) {
+    gameSettings.vibrationEnabled = e.target.checked;
+    updateVolumeDisplays();
+    applySettings();
+});
+
+// ====================================
+// LEADERBOARD YÜKLEME
+// ====================================
+
+async function loadMiniLeaderboard() {
+    try {
+        // Contract'tan haftalık top 3'ü al
+        // TODO: Contract deploy edildikten sonra aktif et
+        
+        // Şimdilik placeholder
+        document.getElementById('leader1').textContent = 'TBA';
+        document.getElementById('leader2').textContent = 'TBA';
+        document.getElementById('leader3').textContent = 'TBA';
+        
+        // Contract örneği:
+        /*
+        if (NFT_CONTRACT_ADDRESS !== '0x0000000000000000000000000000000000000000') {
+            const provider = new ethers.providers.JsonRpcProvider(BASE_RPC_URL);
+            const contract = new ethers.Contract(NFT_CONTRACT_ADDRESS, NFT_ABI, provider);
+            const top3 = await contract.getCurrentWeeklyTop3();
+            
+            document.getElementById('leader1').textContent = 
+                top3[0].score > 0 ? formatScore(top3[0].score) : 'No records yet';
+            document.getElementById('leader2').textContent = 
+                top3[1].score > 0 ? formatScore(top3[1].score) : '-';
+            document.getElementById('leader3').textContent = 
+                top3[2].score > 0 ? formatScore(top3[2].score) : '-';
+        }
+        */
+    } catch (error) {
+        console.error('Leaderboard load error:', error);
+    }
+}
+
+function formatScore(score) {
+    return score.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + 'm';
+}
+
+function showLeaderboard() {
+    // Full leaderboard modal göster
+    alert('Leaderboard feature coming soon! 🏆');
+    // TODO: Detaylı leaderboard UI ekle
+}
+
+// ====================================
+// SAYFA YÜKLENDIĞINDE
+// ====================================
+
+window.addEventListener('DOMContentLoaded', function() {
+    loadSettings();
+    loadMiniLeaderboard();
+    
+    // Ana menüyü göster, start screen'i gizle
+    document.getElementById('mainMenu').style.display = 'flex';
+    document.getElementById('startScreen').classList.add('hidden');
+});
+
+// ====================================
+// OYUN İÇİN SES AYARLARI FONKSİYONU
+// ====================================
+
+function updateGameVolume(settings) {
+    // Ana oyun dosyasındaki audio context'lere ayarları uygula
+    // Bu fonksiyon ana oyun scriptinde tanımlanmalı
+    
+    if (engineSound && engineSound.gainNode) {
+        const baseGain = 0.05; // Orijinal gain
+        engineSound.gainNode.gain.setValueAtTime(
+            settings.musicEnabled ? baseGain * settings.musicVolume : 0,
+            audioContext.currentTime
+        );
+    }
+    
+    // Background music nodes için
+    musicNodes.forEach(node => {
+        if (node.gain) {
+            const baseGain = 0.08; // Orijinal gain
+            node.gain.gain.setValueAtTime(
+                settings.musicEnabled ? baseGain * settings.musicVolume : 0,
+                audioContext.currentTime
+            );
+        }
+    });
+}
+
+// Vibration fonksiyonu
+function vibrateDevice(duration = 50) {
+    if (gameSettings.vibrationEnabled && 'vibrate' in navigator) {
+        navigator.vibrate(duration);
+    }
+}
+
+// Crash olduğunda vibrate (oyun dosyasında kullan)
+function onCrash() {
+    vibrateDevice(100); // 100ms vibration
+}
+
+</script>
