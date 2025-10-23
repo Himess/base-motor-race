@@ -674,7 +674,7 @@
     </div>
 
     <!-- Ethers.js -->
-    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
@@ -866,108 +866,6 @@
         // Mint button event
         mintNftBtn.addEventListener('click', mintScoreNFT);
 
-        // Base Chain NFT Ayarları
-        const BASE_CHAIN_ID = 8453; // Base Mainnet
-        const NFT_CONTRACT_ADDRESS = '0x...'; // Buraya NFT contract adresi gelecek
-        
-        // Web3 / Wallet bağlantısı
-        let userAddress = null;
-        let finalScoreValue = 0;
-
-        // NFT Mint Fonksiyonu
-        async function mintScoreNFT() {
-            try {
-                nftStatusEl.textContent = '⏳ Connecting wallet...';
-                
-                // MetaMask kontrolü
-                if (typeof window.ethereum === 'undefined') {
-                    nftStatusEl.textContent = '❌ MetaMask not found! Please install MetaMask.';
-                    nftStatusEl.style.color = '#ff0000';
-                    return;
-                }
-
-                // Cüzdan bağlantısı
-                const accounts = await window.ethereum.request({ 
-                    method: 'eth_requestAccounts' 
-                });
-                userAddress = accounts[0];
-
-                // Base Chain'e geçiş
-                try {
-                    await window.ethereum.request({
-                        method: 'wallet_switchEthereumChain',
-                        params: [{ chainId: '0x2105' }], // 8453 hex
-                    });
-                } catch (switchError) {
-                    // Base chain eklenmemişse ekle
-                    if (switchError.code === 4902) {
-                        await window.ethereum.request({
-                            method: 'wallet_addEthereumChain',
-                            params: [{
-                                chainId: '0x2105',
-                                chainName: 'Base',
-                                nativeCurrency: {
-                                    name: 'Ethereum',
-                                    symbol: 'ETH',
-                                    decimals: 18
-                                },
-                                rpcUrls: ['https://mainnet.base.org'],
-                                blockExplorerUrls: ['https://basescan.org']
-                            }]
-                        });
-                    }
-                }
-
-                nftStatusEl.textContent = '🎨 Creating NFT...';
-                
-                // NFT Metadata
-                const metadata = {
-                    name: `Base Motor Race #${finalScoreValue}m`,
-                    description: `Amazing race with ${finalScoreValue} meters! 🏍️`,
-                    image: await generateNFTImage(),
-                    attributes: [
-                        { trait_type: 'Distance', value: finalScoreValue },
-                        { trait_type: 'Game', value: 'Base Motor Race' },
-                        { trait_type: 'Date', value: new Date().toISOString() }
-                    ]
-                };
-
-                // Burada normalde blockchain'e yazma işlemi yapılır
-                // Contract çağrısı örneği (gerçek implementasyon gerekli):
-                /*
-                const contract = new ethers.Contract(
-                    NFT_CONTRACT_ADDRESS, 
-                    ABI, 
-                    provider.getSigner()
-                );
-                const tx = await contract.mint(metadata);
-                await tx.wait();
-                */
-
-                // Şimdilik simüle edelim
-                await simulateMinting();
-
-                nftStatusEl.textContent = `✅ NFT minted successfully! Score: ${finalScoreValue}m`;
-                nftStatusEl.style.color = '#00ff00';
-                
-                // IPFS veya Base chain'e kayıt detayları
-                console.log('NFT Metadata:', metadata);
-                console.log('User Address:', userAddress);
-
-            } catch (error) {
-                console.error('NFT Mint Error:', error);
-                nftStatusEl.textContent = `❌ Error: ${error.message}`;
-                nftStatusEl.style.color = '#ff0000';
-            }
-        }
-
-        // NFT için görsel oluştur (canvas snapshot)
-        async function generateNFTImage() {
-            return new Promise((resolve) => {
-                // Oyun bittiğinde canvas'ın bir snapshot'ını al
-                const imageData = canvas.toDataURL('image/png');
-                resolve(imageData);
-            });
         }
 
         // Mint işlemini simüle et (gerçek blockchain işlemi için)
