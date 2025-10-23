@@ -849,14 +849,21 @@
 
             } catch (error) {
                 console.error('Mint Error:', error);
+                console.error('Error Code:', error.code);
+                console.error('Error Message:', error.message);
+                console.error('Error Data:', error.data);
                 
                 let errorMsg = 'Unknown error';
                 if (error.code === 4001) {
                     errorMsg = 'Transaction rejected';
+                } else if (error.code === -32603) {
+                    errorMsg = 'RPC Error - Check Base RPC connection';
                 } else if (error.code === 'INSUFFICIENT_FUNDS') {
                     errorMsg = 'Insufficient ETH for gas';
+                } else if (error.reason) {
+                    errorMsg = error.reason;
                 } else if (error.message) {
-                    errorMsg = error.message.slice(0, 100);
+                    errorMsg = error.message.slice(0, 150);
                 }
                 
                 nftStatusEl.textContent = `❌ ${errorMsg}`;
