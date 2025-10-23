@@ -27,5 +27,8 @@
     "homeUrl": "https://base-motor-race.vercel.app",
     "primaryCategory": "games",
     "tags": ["game", "racing", "arcade", "base", "nft"]
+  },
+  "baseBuilder": {
+    "ownerAddress": "0xb7a87920c44A46025f5a4496609F23D7f2183D39"
   }
 }
